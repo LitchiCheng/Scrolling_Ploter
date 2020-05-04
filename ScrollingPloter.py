@@ -38,20 +38,58 @@ class ScrollingPloter:
         self.timer.timeout.connect(func)
         self.timer.start(1)
 
+'''串口接收
+********************************************************
+'''
 import serial
-ser=serial.Serial("COM9",115200)
+ser=serial.Serial("COM7",115200)
 def update():
     data_str = ser.read(20).hex()
     print(int(data_str[12:16],16) / 10.0)
     x.data_array[0][:-1] = x.data_array[0][1:]
     x.data_array[0][-1] = (int(data_str[12:16],16) / 10.0)
     x.curve_array[0].setData(x.data_array[0])
+'''
+*********************************************************
+'''
 
-x = ScrollingPloter("test", 1)
+'''tcpserver接收
+********************************************************
+'''
+import socket
+server_addr = ('192.168.100.148',52333)
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+server.bind(server_addr)
+server.listen(5)
+ss, addr = server.accept()  
+flag = False
+data_str = ""
+def update1():
+    global flag
+    if (not flag):
+        data = ss.recv(2)
+        data_str = data.decode('utf-8')
+        if (data_str == "A5"):
+            flag = True
+    if flag:
+        data = ss.recv(6)
+        data_str = data.decode('utf-8')
+        print(data_str)
+        flag = False
+        x.data_array[1][:-1] = x.data_array[1][1:]
+        x.data_array[1][-1] = float(data_str)
+        x.curve_array[1].setData(x.data_array[1])
+'''
+******************************************************
+'''
 
-timer = pg.QtCore.QTimer()
-timer.timeout.connect(update)
-timer.start(1)
+x = ScrollingPloter("test", 2)
+# timer = pg.QtCore.QTimer()
+# timer.timeout.connect(update)
+# timer.start(1)
+timer1 = pg.QtCore.QTimer()
+timer1.timeout.connect(update1)
+timer1.start(0.02)
 
 if __name__ == '__main__':
     import sys
