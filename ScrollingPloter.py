@@ -53,6 +53,33 @@ def update():
 *********************************************************
 '''
 
+'''串口接收
+********************************************************
+'''
+import serial
+ser=serial.Serial("COM2",115200)
+def update():
+    data_str = ser.readline()
+    # "4.946620|0.080203|0.080203"
+    data = data_str.decode("utf-8")
+    print(data)
+    data_arry = re.split("[|\n]", data)
+    if data_arry[3] is "":
+        x.data_array[0][:-1] = x.data_array[0][1:]
+        x.data_array[0][-1] = (float(data_arry[0]))
+        x.curve_array[0].setData(x.data_array[0])
+
+        x.data_array[1][:-1] = x.data_array[1][1:]
+        x.data_array[1][-1] = (float(data_arry[1]))
+        x.curve_array[1].setData(x.data_array[1])
+
+        x.data_array[2][:-1] = x.data_array[2][1:]
+        x.data_array[2][-1] = (float(data_arry[2]))
+        x.curve_array[2].setData(x.data_array[2])
+'''
+*********************************************************
+'''
+
 '''tcpserver接收
 ********************************************************
 '''
